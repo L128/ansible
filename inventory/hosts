@@ -1,0 +1,17 @@
+[k3s]
+master0
+master1
+master2
+worker0
+worker1
+worker2
+longhorn0
+longhorn1
+longhorn2
+
+[monitor]
+checkmk
+
+# 为所有主机指定 Python 解释器
+[all:vars]
+ansible_python_interpreter=/usr/bin/python3
