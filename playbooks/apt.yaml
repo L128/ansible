@@ -1,8 +1,9 @@
-- hosts: "*"
-  become: yes
+- name: 系统更新和升级
+  hosts: "*"
+  become: true
   tasks:
-    - name: apt
-      apt:
-        update_cache: yes
-        upgrade: yes
-        autoremove: yes
+    - name: 执行系统更新、升级和自动移除无用包
+      ansible.builtin.apt:  # 使用 apt 模块的完全限定名
+        update_cache: true
+        upgrade: true
+        autoremove: true

@@ -1,7 +1,7 @@
 ---
 - name: 设置系统时区为 Asia/Shanghai
   hosts: all  # 可替换为具体主机组，如 k3s、monitor 等
-  become: yes  # 需要管理员权限
+  become: true  # 需要管理员权限
   tasks:
     - name: 对于基于 systemd 的系统设置时区
       ansible.builtin.command: timedatectl set-timezone Asia/Shanghai
@@ -10,6 +10,7 @@
       changed_when: "'Failed' not in timezone_result.stderr"
 
     - name: 对于非 systemd 系统（如较旧的 Debian/Ubuntu），通过 /etc/timezone 文件设置时区
+      when: ansible_service_mgr != 'systemd'
       block:
         - name: 更新 /etc/timezone 文件
           ansible.builtin.lineinfile:
@@ -20,7 +21,8 @@
 
         - name: 重新配置时区数据
           ansible.builtin.command: dpkg-reconfigure -f noninteractive tzdata
-      when: ansible_service_mgr != 'systemd'
+          args:
+            creates: /etc/localtime
 
     - name: 验证时区设置
       ansible.builtin.command: timedatectl show -p Timezone --value
