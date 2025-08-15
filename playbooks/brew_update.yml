@@ -12,6 +12,7 @@
         - ansible
         - helm
         - chezmoi
+        - ansible-lint
       # cask应用列表
       casks:
         - google-chrome
