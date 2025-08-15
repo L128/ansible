@@ -1,0 +1,63 @@
+---
+- name: 本地管理Homebrew包和应用
+  hosts: localhost
+  connection: local
+  gather_facts: yes
+  vars:
+    # 直接在playbook中定义包列表（确保变量可用）
+    brew_packages:
+      formulas:
+        - git
+        - kubectl
+        - ansible
+        - helm
+        - chezmoi
+      # cask应用列表
+      casks:
+        - google-chrome
+        - firefox
+        - visual-studio-code
+        - surge
+        - iterm2
+        - warp
+        - sonos
+        - visual-studio-code
+        - wechat
+        - font-maple-mono
+        - font-maple-mono-cn
+
+  tasks:
+    # - name: 检查Homebrew是否已安装
+    #   stat:
+    #     path: /opt/homebrew/bin/brew
+    #   register: brew_installed
+
+    # - name: 安装Homebrew
+    #   shell: /bin/zsh -c "$(curl -fsSL https://gitee.com/cunkai/HomebrewCN/raw/master/Homebrew.sh)"
+    #   when: not brew_installed.stat.exists
+
+    - name: 更新Homebrew自身
+      homebrew:
+        update_homebrew: yes
+
+    - name: 安装配置文件中的formula（不存在则安装，不单独升级）
+      homebrew:
+        name: "{{ item }}"
+        state: present  # 只确保存在，不单独升级
+      loop: "{{ brew_packages.formulas }}"
+
+    - name: 统一升级所有已安装的formula
+      command: brew upgrade
+      register: formula_upgrade
+      changed_when: "'No upgrades to install' not in formula_upgrade.stdout"
+
+    - name: 安装/升级指定的cask（单独处理）
+      homebrew_cask:
+        name: "{{ item }}"
+        state: latest  # 确保每个cask都是最新版本
+      loop: "{{ brew_packages.casks }}"
+
+    - name: 清理过时的formula和缓存
+      command: brew cleanup
+      register: brew_clean
+      changed_when: "'Nothing to cleanup' not in brew_clean.stdout"
